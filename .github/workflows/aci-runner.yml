@@ -47,6 +47,8 @@ jobs:
         with:
           resource-group: ${{ env.RESOURCE_GROUP }}
           location: ${{ env.LOCATION }}
+          cpu: 2
+          dns-name-label: mattmajestic${{ github.run_number }}
           image: ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           name: aci-runner-${{ github.run_number }}
           registry-login-server: ${{ env.ACR_NAME }}
