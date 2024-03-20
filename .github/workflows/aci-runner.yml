@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE_NAME: aci-runner
-  IMAGE_TAG: ${{ github.run_number }}
+  IMAGE_TAG: latest
   RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/aci-runner # Replace 'yourUsername' with your actual GitHub username
   RESOURCE_GROUP: azure-vm
   LOCATION: eastus
