@@ -8,17 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: aci-runner
-  IMAGE_TAG: latest
-  RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/aci-runner
-  RESOURCE_GROUP: azure-vm
-  LOCATION: eastus
-  ACR_NAME: majesticcoding.azurecr.io
-  CONTAINERAPPS_ENVIRONMENT: managedEnvironment-azurevm-b1d5 # Replace with your Container Apps environment name
-  CONTAINER_APP_NAME: gh-runner # Replace with your Container App name
-  JOB_NAME: gh-runner-job-${{ github.run_number }} # Job name for Azure Container Apps
-  REPO_OWNER: mattmajestic # Replace with your GitHub username or organization
-  REPO_NAME: aci-runner # Replace with your GitHub repository name
+  
 
 jobs:
   build-and-deploy:
@@ -58,7 +48,7 @@ jobs:
             --replica-retry-limit 0 \
             --replica-completion-count 1 \
             --parallelism 1 \
-            --image ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --image majesticcoding/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
             --min-executions 0 \
             --max-executions 10 \
             --polling-interval 30 \
@@ -70,6 +60,17 @@ jobs:
             --memory "4Gi" \
             --secrets "personal-access-token=${{ secrets.GH_PAT }}" \
             --env-vars "GITHUB_PAT=secretref:personal-access-token" "REPO_URL=https://github.com/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}" "REGISTRATION_TOKEN_API_URL=https://api.github.com/repos/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/actions/runners/registration-token" \
-            --registry-server ${{ env.ACR_NAME }}.azurecr.io
+            --registry-server majesticcoding.azurecr.io
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          IMAGE_NAME: aci-runner
+          IMAGE_TAG: latest
+          RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/aci-runner
+          RESOURCE_GROUP: azure-vm
+          LOCATION: eastus
+          ACR_NAME: majesticcoding.azurecr.io
+          CONTAINERAPPS_ENVIRONMENT: managedEnvironment-azurevm-b1d5 # Replace with your Container Apps environment name
+          CONTAINER_APP_NAME: gh-runner # Replace with your Container App name
+          JOB_NAME: gh-runner-job-${{ github.run_number }} # Job name for Azure Container Apps
+          REPO_OWNER: mattmajestic # Replace with your GitHub username or organization
+          REPO_NAME: aci-runner # Replace with your GitHub repository name
