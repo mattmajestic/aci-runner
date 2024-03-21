@@ -46,19 +46,6 @@ jobs:
         uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Container Apps
-        run: |
-          az containerapp update \
-            --name ${{ env.CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --image ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-            --environment ${{ env.CONTAINERAPPS_ENVIRONMENT }} \
-            --registry-external ${{ env.ACR_NAME }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --set-environment-variables RUNNER_REPOSITORY_URL="${{ env.RUNNER_REPOSITORY_URL }}" RUNNER_TOKEN="${{ steps.generate-token.outputs.token }}"
-
       # Additional step for deploying a job with specific parameters
       - name: Deploy Job to Azure Container Apps
         run: |
