@@ -1,20 +1,11 @@
-#!/bin/bash
-set -e
+#!/bin/sh -l
 
-# Configure the runner
-./config.sh \
-    --url ${RUNNER_REPOSITORY_URL} \
-    --token ${RUNNER_TOKEN} \
-    --name $(hostname) \
-    --work _work \
-    --unattended \
-    --replace
+# Retrieve a short lived runner registration token using the PAT
+REGISTRATION_TOKEN="$(curl -X POST -fsSL \
+  -H 'Accept: application/vnd.github.v3+json' \
+  -H "Authorization: Bearer $GH_PAT" \
+  -H 'X-GitHub-Api-Version: 2022-11-28' \
+  "$REGISTRATION_TOKEN_API_URL" \
+  | jq -r '.token')"
 
-# Install Runner as a service
-./svc.sh install
-
-# Start the Runner service
-./svc.sh start
-
-# Prevent the container from exiting
-tail -f /dev/null
+./config.sh --url $REPO_URL --token $REGISTRATION_TOKEN --unattended --ephemeral && ./run.sh
