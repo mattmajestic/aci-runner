@@ -4,6 +4,19 @@ on:
   push:
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: aci-runner
+  IMAGE_TAG: latest
+  RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/aci-runner
+  RESOURCE_GROUP: azure-vm
+  LOCATION: eastus
+  ACR_NAME: majesticcoding.azurecr.io # Make sure this matches exactly with your ACR login server name
+  CONTAINERAPPS_ENVIRONMENT: managedEnvironment-azurevm-b1d5 # Replace with your Container Apps environment name
+  CONTAINER_APP_NAME: gh-runner # Replace with your Container App name
+  JOB_NAME: gh-runner-job-${{ github.run_number }} # Job name for Azure Container Apps
+  REPO_OWNER: mattmajestic # Replace with your GitHub username or organization
+  REPO_NAME: aci-runner # Replace with your GitHub repository name
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -22,7 +35,7 @@ jobs:
 
       - name: Build and Push to ACR
         run: |
-          echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ env.ACR_NAME }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ env.ACR_NAME }} -u "${{ secrets.ACR_USERNAME }}" --password-stdin
           docker build . -f Dockerfile -t ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           docker push ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
@@ -30,7 +43,7 @@ jobs:
         uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      # Additional step for deploying a job with specific parameters
+
       - name: Deploy Job to Azure Container Apps
         run: |
           az containerapp job create \
@@ -42,7 +55,7 @@ jobs:
             --replica-retry-limit 0 \
             --replica-completion-count 1 \
             --parallelism 1 \
-            --image majesticcoding/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --image ${{ env.ACR_NAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
             --min-executions 0 \
             --max-executions 10 \
             --polling-interval 30 \
@@ -54,17 +67,4 @@ jobs:
             --memory "4Gi" \
             --secrets "personal-access-token=${{ secrets.GH_PAT }}" \
             --env-vars "GITHUB_PAT=secretref:personal-access-token" "REPO_URL=https://github.com/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}" "REGISTRATION_TOKEN_API_URL=https://api.github.com/repos/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/actions/runners/registration-token" \
-            --registry-server majesticcoding.azurecr.io
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          IMAGE_NAME: aci-runner
-          IMAGE_TAG: latest
-          RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/aci-runner
-          RESOURCE_GROUP: azure-vm
-          LOCATION: eastus
-          ACR_NAME: majesticcoding.azurecr.io
-          CONTAINERAPPS_ENVIRONMENT: managedEnvironment-azurevm-b1d5 # Replace with your Container Apps environment name
-          CONTAINER_APP_NAME: gh-runner # Replace with your Container App name
-          JOB_NAME: gh-runner-job-${{ github.run_number }} # Job name for Azure Container Apps
-          REPO_OWNER: mattmajestic # Replace with your GitHub username or organization
-          REPO_NAME: aci-runner # Replace with your GitHub repository name
+            --registry-server ${{ env.ACR_NAME }}
